@@ -10,6 +10,7 @@ on:
 jobs:
   iOS:
     runs_on: macos-large
+    image: latest
     steps:
       - name: Install applesimutils
         id: ios_simulator

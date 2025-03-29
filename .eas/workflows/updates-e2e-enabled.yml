@@ -19,6 +19,7 @@ jobs:
           /opt/homebrew/bin/brew tap wix/brew
           /opt/homebrew/bin/brew install applesimutils
           xcrun simctl list
+      - uses: my_function
       - uses: eas/checkout
       - uses: eas/use_npm_token
       - uses: eas/install_node_modules
@@ -88,4 +89,7 @@ jobs:
           yarn check-android-emulator
           npx detox test -c android.debug
 
-
+functions:
+  my_function:
+    name: Install Java
+    path: ./myFunction

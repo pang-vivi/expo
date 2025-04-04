@@ -54,13 +54,17 @@
   },
   "devDependencies": {
     "@types/jest": "^29.2.1",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^18.19.34",
     "@types/node-forge": "^1.0.0",
+    "@types/picomatch": "^4.0.0",
     "expo-module-scripts": "^4.0.5",
     "express": "^4.21.1",
     "form-data": "^4.0.0",
     "fs-extra": "~8.1.0",
+    "js-yaml": "^4.1.0",
     "memfs": "^3.2.0",
+    "picomatch": "^4.0.2",
     "xstate": "^4.37.2"
   },
   "peerDependencies": {

@@ -1,26 +1,28 @@
-import * as jsyaml from 'js-yaml'
-import picomatch from 'picomatch'
-import {File, ChangeStatus} from './file'
+import * as jsyaml from 'js-yaml';
+
+import { File, ChangeStatus } from './file';
+
+const picomatch = require('picomatch').default;
 
 // Type definition of object we expect to load from YAML
 interface FilterYaml {
-  [name: string]: FilterItemYaml
+  [name: string]: FilterItemYaml;
 }
 type FilterItemYaml =
   | string // Filename pattern, e.g. "path/to/*.js"
-  | {[changeTypes: string]: string | string[]} // Change status and filename, e.g. added|modified: "path/to/*.js"
-  | FilterItemYaml[] // Supports referencing another rule via YAML anchor
+  | { [changeTypes: string]: string | string[] } // Change status and filename, e.g. added|modified: "path/to/*.js"
+  | FilterItemYaml[]; // Supports referencing another rule via YAML anchor
 
 // Minimatch options used in all matchers
 const MatchOptions = {
-  dot: true
-}
+  dot: true,
+};
 
 // Internal representation of one item in named filter rule
 // Created as simplified form of data in FilterItemYaml
 interface FilterRuleItem {
-  status?: ChangeStatus[] // Required change status of the matched files
-  isMatch: (str: string) => boolean // Matches the filename
+  status?: ChangeStatus[]; // Required change status of the matched files
+  isMatch: (str: string) => boolean; // Matches the filename
 }
 
 /**
@@ -47,80 +49,86 @@ export enum PredicateQuantifier {
    * at least one pattern that matches them. This is the default behavior if you don't
    * specify anything as a predicate quantifier.
    */
-  SOME = 'some'
+  SOME = 'some',
 }
 
 /**
  * Used to define customizations for how the file filtering should work at runtime.
  */
-export type FilterConfig = {readonly predicateQuantifier: PredicateQuantifier}
+export type FilterConfig = { readonly predicateQuantifier: PredicateQuantifier };
 
 /**
  * An array of strings (at runtime) that contains the valid/accepted values for
  * the configuration parameter 'predicate-quantifier'.
  */
-export const SUPPORTED_PREDICATE_QUANTIFIERS = Object.values(PredicateQuantifier)
+export const SUPPORTED_PREDICATE_QUANTIFIERS = Object.values(PredicateQuantifier);
 
 export function isPredicateQuantifier(x: unknown): x is PredicateQuantifier {
-  return SUPPORTED_PREDICATE_QUANTIFIERS.includes(x as PredicateQuantifier)
+  return SUPPORTED_PREDICATE_QUANTIFIERS.includes(x as PredicateQuantifier);
 }
 
 export interface FilterResults {
-  [key: string]: File[]
+  [key: string]: File[];
 }
 
 export class Filter {
-  rules: {[key: string]: FilterRuleItem[]} = {}
+  rules: { [key: string]: FilterRuleItem[] } = {};
 
   // Creates instance of Filter and load rules from YAML if it's provided
-  constructor(yaml?: string, readonly filterConfig?: FilterConfig) {
+  constructor(
+    yaml?: string,
+    readonly filterConfig?: FilterConfig
+  ) {
     if (yaml) {
-      this.load(yaml)
+      this.load(yaml);
     }
   }
 
   // Load rules from YAML string
   load(yaml: string): void {
     if (!yaml) {
-      return
+      return;
     }
 
-    const doc = jsyaml.load(yaml) as FilterYaml
+    const doc = jsyaml.load(yaml) as FilterYaml;
     if (typeof doc !== 'object') {
-      this.throwInvalidFormatError('Root element is not an object')
+      this.throwInvalidFormatError('Root element is not an object');
     }
 
     for (const [key, item] of Object.entries(doc)) {
-      this.rules[key] = this.parseFilterItemYaml(item)
+      this.rules[key] = this.parseFilterItemYaml(item);
     }
   }
 
   match(files: File[]): FilterResults {
-    const result: FilterResults = {}
+    const result: FilterResults = {};
     for (const [key, patterns] of Object.entries(this.rules)) {
-      result[key] = files.filter(file => this.isMatch(file, patterns))
+      result[key] = files.filter((file) => this.isMatch(file, patterns));
     }
-    return result
+    return result;
   }
 
   private isMatch(file: File, patterns: FilterRuleItem[]): boolean {
     const aPredicate = (rule: Readonly<FilterRuleItem>): boolean => {
-      return (rule.status === undefined || rule.status.includes(file.status)) && rule.isMatch(file.filename)
-    }
+      return (
+        (rule.status === undefined || rule.status.includes(file.status)) &&
+        rule.isMatch(file.filename)
+      );
+    };
     if (this.filterConfig?.predicateQuantifier === 'every') {
-      return patterns.every(aPredicate)
+      return patterns.every(aPredicate);
     } else {
-      return patterns.some(aPredicate)
+      return patterns.some(aPredicate);
     }
   }
 
   private parseFilterItemYaml(item: FilterItemYaml): FilterRuleItem[] {
     if (Array.isArray(item)) {
-      return flat(item.map(i => this.parseFilterItemYaml(i)))
+      return flat(item.map((i) => this.parseFilterItemYaml(i)));
     }
 
     if (typeof item === 'string') {
-      return [{status: undefined, isMatch: picomatch(item, MatchOptions)}]
+      return [{ status: undefined, isMatch: picomatch(item, MatchOptions) }];
     }
 
     if (typeof item === 'object') {
@@ -128,29 +136,29 @@ export class Filter {
         if (typeof key !== 'string' || (typeof pattern !== 'string' && !Array.isArray(pattern))) {
           this.throwInvalidFormatError(
             `Expected [key:string]= pattern:string | string[], but [${key}:${typeof key}]= ${pattern}:${typeof pattern} found`
-          )
+          );
         }
         return {
           status: key
             .split('|')
-            .map(x => x.trim())
-            .filter(x => x.length > 0)
-            .map(x => x.toLowerCase()) as ChangeStatus[],
-          isMatch: picomatch(pattern, MatchOptions)
-        }
-      })
+            .map((x) => x.trim())
+            .filter((x) => x.length > 0)
+            .map((x) => x.toLowerCase()) as ChangeStatus[],
+          isMatch: picomatch(pattern, MatchOptions),
+        };
+      });
     }
 
-    this.throwInvalidFormatError(`Unexpected element type '${typeof item}'`)
+    this.throwInvalidFormatError(`Unexpected element type '${typeof item}'`);
   }
 
   private throwInvalidFormatError(message: string): never {
-    throw new Error(`Invalid filter YAML format: ${message}.`)
+    throw new Error(`Invalid filter YAML format: ${message}.`);
   }
 }
 
 // Creates a new array with all sub-array elements concatenated
 // In future could be replaced by Array.prototype.flat (supported on Node.js 11+)
 function flat<T>(arr: T[][]): T[] {
-  return arr.reduce((acc, val) => acc.concat(val), [])
+  return arr.reduce((acc, val) => acc.concat(val), []);
 }

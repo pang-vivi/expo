@@ -1,6 +1,6 @@
 export interface File {
-  filename: string
-  status: ChangeStatus
+  filename: string;
+  status: ChangeStatus;
 }
 
 export enum ChangeStatus {
@@ -9,5 +9,5 @@ export enum ChangeStatus {
   Deleted = 'deleted',
   Modified = 'modified',
   Renamed = 'renamed',
-  Unmerged = 'unmerged'
+  Unmerged = 'unmerged',
 }

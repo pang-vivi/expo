@@ -17,11 +17,11 @@ const picomatch = require('picomatch');
  */
 
 (async function () {
-  const args = process.argv.slice(2);
-  console.log(`args: ${JSON.stringify(args, null, 2)}`);
-
-  const branch = 'sdk-52';
-  const pathsToCheck = ['packages/expo-updates/**'];
+  const args = [...process['argv'].slice(2)];
+  const branch: string = args.shift();
+  const pathsToCheck: string[] = [...args];
+  // console.log(`branch: ${branch}`);
+  // console.log(`pathsToCheck: ${JSON.stringify(pathsToCheck, null, 2)}`);
   const currentBranchName = uuid();
   const fetchHeadBranchName = uuid();
   await prepareGit(branch, currentBranchName, fetchHeadBranchName);
@@ -29,9 +29,9 @@ const picomatch = require('picomatch');
   const filter = new Filter();
   filter.loadFromEntries(pathsToCheck);
   const results = filter.match(changedFiles);
-  console.log(`results: ${JSON.stringify(results, null, 2)}`);
+  // console.log(`results: ${JSON.stringify(results, null, 2)}`);
   const didChange = await didAnyFilesChange(results);
-  console.log(`didChange: ${didChange}`);
+  console.log(didChange ? 'true' : 'false');
 })();
 
 // Minimatch options used in all matchers

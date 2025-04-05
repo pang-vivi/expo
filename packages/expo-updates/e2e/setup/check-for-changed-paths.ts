@@ -18,8 +18,15 @@ const picomatch = require('picomatch');
 
 (async function () {
   const args = [...process['argv'].slice(2)];
-  const branch: string = args.shift();
-  const pathsToCheck: string[] = [...args];
+  if (args.length < 1) {
+    throw new Error('Usage: check-for-changed-paths <branch> [<path1> <path2> ...]');
+  } 
+  const branch: string = args.shift() as unknown as string;
+  const pathsToCheck: string[] = [...args] ?? [];
+  if (pathsToCheck.length === 0) {
+    console.log('false');
+    return;
+  }
   // console.log(`branch: ${branch}`);
   // console.log(`pathsToCheck: ${JSON.stringify(pathsToCheck, null, 2)}`);
   const currentBranchName = uuid();
@@ -53,13 +60,13 @@ async function didAnyFilesChange(result: FilterResults) {
 
 async function prepareGit(branch: string, currentBranchName: string, fetchHeadBranchName: string) {
   await spawnAsync('git', ['checkout', '-b', currentBranchName], {
-    stdio: 'ignore',
+    stdio: 'inherit',
   });
   await spawnAsync('git', ['add', '.'], {
-    stdio: 'ignore',
+    stdio: 'inherit',
   });
   await spawnAsync('git', ['commit', '--allow-empty', '-m', 'tmp'], {
-    stdio: 'ignore',
+    stdio: 'inherit',
   });
   await spawnAsync('git', ['fetch', 'origin', branch], {
     stdio: 'ignore',

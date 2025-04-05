@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "expo-module build",
+    "build:check-paths": "ncc build ./e2e/setup/check-for-changed-paths.ts -o ./bin/check-for-changed-paths --minify --no-cache --no-source-map-register",
     "clean": "expo-module clean",
     "lint": "expo-module lint",
     "test": "expo-module test",
@@ -58,6 +59,7 @@
     "@types/node": "^18.19.34",
     "@types/node-forge": "^1.0.0",
     "@types/picomatch": "^4.0.0",
+    "@vercel/ncc": "^0.38.1",
     "expo-module-scripts": "^4.0.5",
     "express": "^4.21.1",
     "form-data": "^4.0.0",

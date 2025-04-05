@@ -11,15 +11,14 @@ jobs:
   Check paths:
     outputs:
       result: ${{ steps.changed_paths.outputs.result }}
-    runs_on: linux-large-nested-virtualization
+    runs_on: linux-medium
     image: latest
     steps:
       - uses: eas/checkout
-      - uses: eas/install_node_modules
       - name: Check changed paths
         id: changed_paths
         run: |
-          set-output result `yarn --silent ts-node --transpile-only ./packages/expo-updates/e2e/setup/check-for-changed-files.ts doug/sdk-52-workflow-testing packages/expo-updates`
+          set-output result `node ./packages/expo-updates/bin/check-for-changed-paths/index.js doug/sdk-52-workflow-testing packages/expo-updates`
       - name: Print result
         run: echo ${{ steps.changed_paths.outputs.result }}
   

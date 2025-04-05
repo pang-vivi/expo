@@ -61,37 +61,28 @@ async function didAnyFilesChange(result: FilterResults) {
 
 async function setOutput(name: string, value: string) {
   // set-output only exists in EAS build environment, so just log this if we are testing locally
-  if (!(await doesCommandExist('set-output'))) {
-    console.log(`Calling set-output with name=${name}, value=${value}`);
+  if (process.env.CI !== 'true') {
+    console.log(`set-output name=${name} value=${value}`);
     return;
   }
   await spawnAsync('set-output', [name, value], { stdio: 'inherit' });
 }
 
-async function doesCommandExist(command: string) {
-  try {
-    await spawnAsync('command', ['-v', command], { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function prepareGit(branch: string, currentBranchName: string, fetchHeadBranchName: string) {
   await spawnAsync('git', ['config', 'user.email', process.env.GIT_AUTHOR_EMAIL], {
-    stdio: 'inherit',
+    stdio: 'ignore',
   });
   await spawnAsync('git', ['config', 'user.name', process.env.GIT_AUTHOR_NAME], {
-    stdio: 'inherit',
+    stdio: 'ignore',
   });
   await spawnAsync('git', ['checkout', '-b', currentBranchName], {
-    stdio: 'inherit',
+    stdio: 'ignore',
   });
   await spawnAsync('git', ['add', '.'], {
-    stdio: 'inherit',
+    stdio: 'ignore',
   });
   await spawnAsync('git', ['commit', '--allow-empty', '-m', 'tmp'], {
-    stdio: 'inherit',
+    stdio: 'ignore',
   });
   await spawnAsync('git', ['fetch', 'origin', branch], {
     stdio: 'ignore',

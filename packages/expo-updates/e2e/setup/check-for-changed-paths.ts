@@ -60,14 +60,10 @@ async function didAnyFilesChange(result: FilterResults) {
 }
 
 async function setOutput(name: string, value: string) {
-  // set-output only exists in EAS build environment, so just log this if we are testing locally
-  if (!(await doesCommandExist('set-output'))) {
-    console.log(`set-output name=${name} value=${value}`);
-    return;
-  }
   await spawnAsync('set-output', [name, value], { stdio: 'inherit' });
 }
 
+/*
 async function doesCommandExist(command: string) {
   try {
     await spawnAsync('command', ['-v', command]);
@@ -76,6 +72,7 @@ async function doesCommandExist(command: string) {
     return false;
   }
 }
+  */
 
 async function prepareGit(branch: string, currentBranchName: string, fetchHeadBranchName: string) {
   await spawnAsync('git', ['config', 'user.email', process.env.GIT_AUTHOR_EMAIL], {

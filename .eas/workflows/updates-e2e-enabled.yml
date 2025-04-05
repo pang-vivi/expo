@@ -11,24 +11,21 @@ jobs:
   Check paths:
     outputs:
       result: ${{ steps.changed_paths.outputs.result }}
-      error: ${{ steps.changed_paths.outputs.error }}
     runs_on: linux-medium
     image: latest
     steps:
       - uses: eas/checkout
       - name: Check changed paths
         id: changed_paths
+        outputs: [result, error]
         env:
           GIT_AUTHOR_NAME: "Douglas Lowder"
           GIT_AUTHOR_EMAIL: "douglowder@mac.com"
         run: |
-          node ./packages/expo-updates/bin/check-for-changed-paths/index.js doug/sdk-52-workflow-testing packages/expo-updates > ../changed_paths.txt 2> ../changed_paths_error.txt
-          set-output result `cat ../changed_paths.txt`
-          set-output error `cat ../changed_paths_error.txt`
+          node ./packages/expo-updates/bin/check-for-changed-paths/index.js doug/sdk-52-workflow-testing 'packages/expo-updates/**'
       - name: Print result
         run: |
           echo ${{ steps.changed_paths.outputs.result }}
-          echo ${{ steps.changed_paths.outputs.error }}
 
 #  iOS:
 #    runs_on: macos-large

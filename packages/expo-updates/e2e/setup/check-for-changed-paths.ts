@@ -37,8 +37,9 @@ const picomatch = require('picomatch');
   filter.loadFromEntries(pathsToCheck);
   const results = filter.match(changedFiles);
   console.log(`results: ${JSON.stringify(results, null, 2)}`);
-  const didChange = await didAnyFilesChange(results);
-  console.log(didChange ? 'true' : 'false');
+  const didChange = (await didAnyFilesChange(results)) ? 'true' : 'false';
+  console.log(`didChange: ${didChange}`);
+  await setOutput('result', didChange);
 })();
 
 // Minimatch options used in all matchers
@@ -56,6 +57,10 @@ class Filter extends PathsFilter {
 
 async function didAnyFilesChange(result: FilterResults) {
   return Object.values(result).some((files) => files.length > 0);
+}
+
+async function setOutput(name: string, value: string) {
+  await spawnAsync('set-output', [name, value], { stdio: 'inherit' });
 }
 
 async function prepareGit(branch: string, currentBranchName: string, fetchHeadBranchName: string) {

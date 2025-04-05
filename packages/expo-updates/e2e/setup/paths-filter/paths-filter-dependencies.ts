@@ -1,7 +1,7 @@
 // Implementation of paths-filter dependencies
 import type { SpawnResult } from '@expo/spawn-async';
 
-const spawnAsync = require('@expo/spawn-async').default;
+const spawnAsync = require('@expo/spawn-async');
 
 type ExecOutputResult = SpawnResult & {
   exitCode: number;

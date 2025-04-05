@@ -20,9 +20,9 @@ const picomatch = require('picomatch');
   const args = [...process['argv'].slice(2)];
   if (args.length < 1) {
     throw new Error('Usage: check-for-changed-paths <branch> [<path1> <path2> ...]');
-  } 
+  }
   const branch: string = args.shift() as unknown as string;
-  const pathsToCheck: string[] = [...args] ?? [];
+  const pathsToCheck: string[] = [...args];
   if (pathsToCheck.length === 0) {
     console.log('false');
     return;
@@ -59,6 +59,12 @@ async function didAnyFilesChange(result: FilterResults) {
 }
 
 async function prepareGit(branch: string, currentBranchName: string, fetchHeadBranchName: string) {
+  await spawnAsync('git', ['config', 'user.email', process.env.GIT_AUTHOR_EMAIL], {
+    stdio: 'inherit',
+  });
+  await spawnAsync('git', ['config', 'user.name', process.env.GIT_AUTHOR_NAME], {
+    stdio: 'inherit',
+  });
   await spawnAsync('git', ['checkout', '-b', currentBranchName], {
     stdio: 'inherit',
   });
